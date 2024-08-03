@@ -32,7 +32,11 @@ let ten = 10;
 let add = fn(x, y) {
   x + y;
 };
-let result = add(five, ten);`,
+let result = add(five, ten);
+<>!
+x <= y
+>= != ==
+`,
 			expectedTokens: []token.Token{
 				{Type: token.LET, Literal: "let"},
 				{Type: token.IDENT, Literal: "five"},
@@ -70,6 +74,15 @@ let result = add(five, ten);`,
 				{Type: token.IDENT, Literal: "ten"},
 				{Type: token.RPAREN, Literal: ")"},
 				{Type: token.SEMICOLON, Literal: ";"},
+				{Type: token.LT, Literal: "<"},
+				{Type: token.GT, Literal: ">"},
+				{Type: token.BANG, Literal: "!"},
+				{Type: token.IDENT, Literal: "x"},
+				{Type: token.LTE, Literal: "<="},
+				{Type: token.IDENT, Literal: "y"},
+				{Type: token.GTE, Literal: ">="},
+				{Type: token.NEQ, Literal: "!="},
+				{Type: token.EQ, Literal: "=="},
 				{Type: token.EOF, Literal: ""},
 			},
 		},

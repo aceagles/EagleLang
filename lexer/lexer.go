@@ -47,14 +47,36 @@ func (l *Lexer) NextToken() token.Token {
 	case '+':
 		tok = NewToken(token.PLUS, l.char)
 	case '=':
-		tok = NewToken(token.ASSIGN, l.char)
+		if tk, ok := l.checkSecondEquals(token.EQ); ok {
+			tok = tk
+		} else {
+			tok = NewToken(token.ASSIGN, l.char)
+		}
+	case '<':
+		if tk, ok := l.checkSecondEquals(token.LTE); ok {
+			tok = tk
+		} else {
+			tok = NewToken(token.LT, l.char)
+		}
+	case '>':
+		if tk, ok := l.checkSecondEquals(token.GTE); ok {
+			tok = tk
+		} else {
+			tok = NewToken(token.GT, l.char)
+		}
+	case '!':
+		if tk, ok := l.checkSecondEquals(token.NEQ); ok {
+			tok = tk
+		} else {
+			tok = NewToken(token.BANG, l.char)
+		}
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
 		if isLetter(l.char) {
 			identifier := l.readIdent()
-			tok = lookupIdentifier(identifier)
+			tok = token.LookupIdentifier(identifier)
 			return tok
 		} else if isNumber(l.char) {
 			numeral := l.readNumber()
@@ -67,6 +89,17 @@ func (l *Lexer) NextToken() token.Token {
 
 	l.readChar()
 	return tok
+}
+
+func (l *Lexer) checkSecondEquals(t token.TokenType) (tok token.Token, ok bool) {
+	if l.peekChar() == '=' {
+		ok = true
+		ch := l.char
+		l.readChar()
+		tok.Type = t
+		tok.Literal = string(ch) + string(l.char)
+	}
+	return
 }
 
 func isWhitespace(s byte) bool {
@@ -93,22 +126,10 @@ func isLetter(c byte) bool {
 
 func (l *Lexer) readIdent() string {
 	position := l.currentPos
-
 	for isLetter(l.char) {
 		l.readChar()
 	}
 	return l.input[position:l.currentPos]
-}
-
-func lookupIdentifier(s string) token.Token {
-	switch s {
-	case "fn":
-		return token.Token{token.FUNCTION, "fn"}
-	case "let":
-		return token.Token{token.LET, "let"}
-	default:
-		return token.Token{token.IDENT, s}
-	}
 }
 
 func (l *Lexer) readNumber() string {
@@ -117,4 +138,11 @@ func (l *Lexer) readNumber() string {
 		l.readChar()
 	}
 	return l.input[position:l.currentPos]
+}
+
+func (l *Lexer) peekChar() byte {
+	if l.readPos >= len(l.input) {
+		return 0
+	}
+	return l.input[l.readPos]
 }
