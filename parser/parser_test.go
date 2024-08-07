@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/aceagles/EagleLang/ast"
@@ -58,4 +59,15 @@ func TestLetStatement(t *testing.T) {
 		},
 	}
 	assert.Equal(t, want, *program)
+
+	input = `let = 5;
+	let y = ;`
+	l = lexer.New(input)
+	p = New(&l)
+	program = p.ParseProgram()
+	fmt.Println(program.Statements)
+	assert.Len(t, program.Statements, 2)
+	assert.Len(t, p.errors, 2)
+	assert.Equal(t, "expected next token to be IDENT but got =", p.errors[0])
+	assert.Equal(t, "expected next token to be INT but got ;", p.errors[1])
 }

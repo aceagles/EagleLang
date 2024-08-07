@@ -13,6 +13,7 @@ type Parser struct {
 
 	currToken token.Token
 	peekToken token.Token
+	errors    []string
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -34,6 +35,7 @@ func (p *Parser) expectPeek(t string) bool {
 		p.nextToken()
 		return true
 	} else {
+		p.errors = append(p.errors, "expected next token to be "+t+" but got "+string(p.peekToken.Type))
 		return false
 	}
 }
@@ -57,7 +59,10 @@ func (p *Parser) ParseProgram() *ast.Program {
 func (p *Parser) parseLetStatement() *ast.LetStatement {
 	stmt := ast.LetStatement{Token: p.currToken}
 
-	p.nextToken()
+	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+
 	stmt.Name = &ast.Identifier{
 		Token: p.currToken,
 		Value: p.currToken.Literal,
@@ -67,6 +72,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
+	p.expectPeek(token.INT)
 	stmt.Value = p.parseIntegerLiteral()
 
 	for p.currToken.Type != token.SEMICOLON {
@@ -77,7 +83,6 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 }
 
 func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
-	p.nextToken()
 	value, _ := strconv.Atoi(p.currToken.Literal)
 	return &ast.IntegerLiteral{
 		Token: p.currToken,
