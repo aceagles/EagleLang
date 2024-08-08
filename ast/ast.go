@@ -1,9 +1,15 @@
 package ast
 
-import "github.com/aceagles/EagleLang/token"
+import (
+	"bytes"
+	"fmt"
+
+	"github.com/aceagles/EagleLang/token"
+)
 
 type Node interface {
 	TokenLiteral() string
+	String() string
 }
 
 type Statement interface {
@@ -27,6 +33,15 @@ func (p *Program) TokenLiteral() string {
 		return ""
 	}
 }
+func (p *Program) String() string {
+	var out bytes.Buffer
+
+	for _, v := range p.Statements {
+		out.WriteString(v.String())
+	}
+
+	return out.String()
+}
 
 type LetStatement struct {
 	Token token.Token
@@ -38,6 +53,17 @@ func (l *LetStatement) statementNode() {}
 func (l *LetStatement) TokenLiteral() string {
 	return l.Token.Literal
 }
+func (l *LetStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(l.TokenLiteral() + " " + l.Name.String() + " = ")
+	if l.Value != nil {
+		out.WriteString(l.Value.String())
+	}
+
+	out.WriteString(";")
+	return out.String()
+}
 
 type Identifier struct {
 	Token token.Token
@@ -48,6 +74,9 @@ func (id *Identifier) expressionNode() {}
 func (id *Identifier) TokenLiteral() string {
 	return id.Token.Literal
 }
+func (id *Identifier) String() string {
+	return id.Value
+}
 
 type IntegerLiteral struct {
 	Token token.Token
@@ -57,4 +86,23 @@ type IntegerLiteral struct {
 func (il *IntegerLiteral) expressionNode() {}
 func (il *IntegerLiteral) TokenLiteral() string {
 	return il.Token.Literal
+}
+func (il *IntegerLiteral) String() string {
+	return fmt.Sprintf("%d", il.Value)
+}
+
+type ExpressionStatement struct {
+	Token      token.Token
+	Expression Expression
+}
+
+func (es *ExpressionStatement) statementNode() {}
+func (es *ExpressionStatement) TokenLiteral() string {
+	return es.Token.Literal
+}
+func (es *ExpressionStatement) String() string {
+	if es.Expression != nil {
+		return es.Expression.String()
+	}
+	return ""
 }
